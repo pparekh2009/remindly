@@ -20,7 +20,7 @@ public class Todo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    private String todo;
+    private String title;
 
     private String category;
 
@@ -36,6 +36,7 @@ public class Todo {
     @Column(name = "due_at")
     private LocalDateTime dueAt;
 
+    @Builder.Default
     private Priority priority = Priority.LOW;
 
     @PrePersist

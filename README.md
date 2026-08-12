@@ -1,41 +1,43 @@
 # Remindly
 
-Remindly is an MCP (Model Context Protocol) server for task tracking. It lets you manage a todo list directly from an AI client (Claude, Claude Code, etc.) using natural language, instead of a dedicated UI — the AI calls tools exposed by this server to create and list your tasks.
+Remindly is an MCP (Model Context Protocol) server for task tracking. Manage your todos through natural language from an AI client (Claude, Claude Code, etc.) instead of a dedicated UI.
 
-This is a personal learning project and my first MCP server. More tools (update, complete, delete tasks, reminders, etc.) are planned.
+Personal learning project — my first MCP server. Planned next: more reporting tools — e.g. listing completed todos (all-time or within a date range), overdue todos, todos filtered by category, and todos due within a date range.
 
-## How it works
+## Features
 
-Remindly is a Spring Boot application built on [Spring AI's MCP server starter](https://docs.spring.io/spring-ai/reference/api/mcp/mcp-server-boot-starter-docs.html). It runs as a local process communicating over stdio (`spring.main.web-application-type=none`), and exposes Java methods as MCP tools via the `@McpTool` annotation. Tasks are persisted to a file-based H2 database through Spring Data JPA — no external database process required.
+- Create, find, update, complete, and delete todos by natural language
+- Priority levels: `LOW`, `MEDIUM`, `HIGH`
+- Optional category and due date per todo
+- Case-insensitive partial-text search (`find_todos`)
+- Mutations are id-only — the AI must confirm a match with you before acting on it
+- No external database process — everything persists to a local H2 file
 
 ## Tools
 
 | Tool | Description |
 |---|---|
-| `create_task` | Creates a new todo with an optional category, priority (`LOW`, `MEDIUM`, `HIGH`), and due date. |
-| `get_all_tasks` | Retrieves all pending tasks. |
+| `create_todo` | Creates a todo — title, optional category, priority (default `LOW`), due date. |
+| `get_all_pending_todos` | Retrieves all pending (not yet completed) todos. |
+| `find_todos` | Case-insensitive partial-text search on titles, returns candidates with ids. |
+| `complete_todo` | Marks a todo completed, by id. |
+| `update_todo` | Updates one or more fields of a todo, by id. Omitted fields are left as-is. |
+| `delete_todo` | Permanently deletes a todo, by id. Irreversible. |
 
 ## Tech stack
 
 - Java 17
 - Spring Boot 4.1
-- Spring AI MCP Server Starter (`spring-ai-starter-mcp-server`)
+- Spring AI MCP Server Starter
 - Spring Data JPA
 - H2 (file-based)
 
 ## Getting started
 
-### Prerequisites
+**Prerequisites:** Java 17+
 
-- Java 17+
-
-### 1. Download
-
-Grab the latest `remindly.jar` from the [Releases](../../releases) page.
-
-### 2. Connect an MCP client
-
-Point your MCP-compatible client (e.g. Claude Desktop, Claude Code) at the downloaded jar. Example config:
+1. Grab the latest `remindly.jar` from the [Releases](../../releases) page.
+2. Point your MCP client (Claude Desktop, Claude Code, etc.) at the jar:
 
 ```json
 {
@@ -48,39 +50,44 @@ Point your MCP-compatible client (e.g. Claude Desktop, Claude Code) at the downl
 }
 ```
 
-Once connected, you can talk to the AI naturally, e.g. "remind me to pay rent by the 5th, high priority" or "what's on my todo list?".
+3. Talk to the AI naturally — e.g. "remind me to pay rent by the 5th, high priority" or "what's on my todo list?".
 
-### Advanced: custom database location or credentials
+## Custom database location or credentials
 
-By default, the database file is created as `data/remindly.mv.db` next to wherever the jar runs from, using default credentials. To customize this, place a `.env` file next to the jar:
+- Default location: `~/.remindly/data/remindly.mv.db` — universal across all projects and sessions.
+- To override, place a `.env` file next to the jar:
 
 | Variable | Default | Description |
 |---|---|---|
-| `DB_URL` | `jdbc:h2:file:./data/remindly` | JDBC URL of the H2 database file |
+| `DB_URL` | `jdbc:h2:file:${user.home}/.remindly/data/remindly` | JDBC URL of the H2 database file |
 | `DB_USERNAME` | `sa` | Database username |
 | `DB_PASSWORD` | *(empty)* | Database password |
 
+Want an isolated per-project todo list instead? Set `DB_URL` in that project's MCP config:
+
+```json
+{
+  "mcpServers": {
+    "remindly": {
+      "command": "java",
+      "args": ["-jar", "/absolute/path/to/remindly.jar"],
+      "env": { "DB_URL": "jdbc:h2:file:./data/remindly" }
+    }
+  }
+}
+```
+
 ## Building from source
 
-Prefer to build it yourself instead of using a release jar? You'll need Java 17+ and the included `mvnw` wrapper:
+You'll need Java 17+ and the included `mvnw` wrapper:
 
 ```bash
 ./mvnw clean package
 ```
 
-The runnable jar is produced at `target/remindly-0.0.1-SNAPSHOT.jar`. Point your MCP client at that path instead, same config shape as above.
-
-## Project structure
-
-```
-src/main/java/com/priyanshparekh/remindly/
-├── RemindlyApplication.java   # Spring Boot entry point
-├── tool/TodoTools.java        # MCP tool definitions (@McpTool)
-├── service/TodoService.java   # Business logic
-├── repository/TodoRepository.java
-├── entity/                    # JPA entities (Todo, Priority)
-└── dto/                       # Request/response records
-```
+- Runnable jar: `target/remindly-0.0.1-SNAPSHOT.jar`
+- Point your MCP client at that path, same config shape as above.
+- If your client keeps a long-lived reference to the jar path (e.g. Claude Code's `mcp add`), rebuilding overwrites the same file — a session already connected won't pick up the new build until it reconnects/restarts.
 
 ## License
 

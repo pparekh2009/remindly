@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 public record AddTodoRequest(
    @McpToolParam(description = "Title of the task.")
-   String todo,
+   String title,
 
    @McpToolParam(description = "Category to put this task under, e.g. 'home', 'work', etc." +
            "Optional - omit if user does not mention it.", required = false)
