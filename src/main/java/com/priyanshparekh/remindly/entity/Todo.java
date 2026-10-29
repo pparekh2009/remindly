@@ -22,7 +22,9 @@ public class Todo {
 
     private String title;
 
-    private String category;
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

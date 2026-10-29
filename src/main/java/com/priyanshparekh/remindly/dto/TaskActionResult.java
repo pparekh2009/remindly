@@ -7,16 +7,14 @@ import java.util.List;
 public record TaskActionResult(
         String status,
         String message,
-        TodoResponse todoResponse,
-        List<TodoResponse> candidateList
+        TodoResponse todoResponse
 ) {
 
     public static TaskActionResult success(Todo todo, String message) {
         return new TaskActionResult(
                 "success",
                 message,
-                TodoResponse.from(todo),
-                null
+                TodoResponse.toResponse(todo)
         );
     }
 
@@ -24,7 +22,6 @@ public record TaskActionResult(
         return new TaskActionResult(
                 "not_found",
                 "Todo with " + id + " not found",
-                null,
                 null
         );
     }

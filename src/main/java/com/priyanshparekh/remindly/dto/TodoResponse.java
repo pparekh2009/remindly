@@ -12,12 +12,12 @@ public record TodoResponse(
         String priority
 ) {
 
-    public static TodoResponse from(Todo todo) {
+    public static TodoResponse toResponse(Todo todo) {
         return new TodoResponse(
                 todo.getId(),
                 todo.getTitle(),
                 todo.getDueAt() != null ? todo.getDueAt().toString() : null,
-                todo.getCategory(),
+                todo.getCategory() != null ? todo.getCategory().getCategory() : null,
                 todo.getPriority().name()
         );
     }
