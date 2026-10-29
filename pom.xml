@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.priyanshparekh</groupId>
 	<artifactId>remindly</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2</version>
 	<name>remindly</name>
 	<description>MCP server for task tracking, manage your todos from an AI client using natural language.</description>
 	<url>https://github.com/pparekh2009/remindly</url>
